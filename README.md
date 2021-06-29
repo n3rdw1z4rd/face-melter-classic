@@ -13,5 +13,5 @@ Original TBC FaceMelter addon, updated to work with TBC Classic
     * [WoW Interface](https://www.wowinterface.com/downloads/info26098-FaceMelterClassic.html)
   * Installation:
     * Unzip archive.
-    * Copy/move the `FaceMelterClassic` folder into your `World of Warcraft\_classic__\Interface\AddOns` folder.
+    * Copy/move the `FaceMelterClassic` folder into your `World of Warcraft\_classic_\Interface\AddOns` folder.
 * (Re)Start World of Warcraft.
