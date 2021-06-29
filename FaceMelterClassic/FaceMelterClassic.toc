@@ -5,4 +5,4 @@
 ## Version: 0.2
 ## SavedVariables: facemelterdb
 
-FaceMelter.lua
+FaceMelterClassic.lua
