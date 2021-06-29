@@ -1,0 +1,8 @@
+## Interface: 20300
+## Title: Face Melter
+## Notes: Shadow priest max dps face melting machine.  Warning: Might SW:Death your own face off...
+## Author: Falie, aka Drescan, Aytherine
+## Version: 1.3
+## SavedVariables: facemelterdb
+
+FaceMelter.lua
