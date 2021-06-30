@@ -2,7 +2,7 @@
 ## Title: Face Melter Classic
 ## Notes: Shadow priest max dps face melting machine.  Warning: Might SW:Death your own face off...
 ## Author: Falie, aka Drescan, Aytherine, sbd74 (updated for TBC Classic)
-## Version: v0.5-alpha
+## Version: v0.6-alpha
 ## SavedVariables: facemelterdb
 ## X-Website: https://www.curseforge.com/wow/addons/facemelterclassic
 ## X-Curse-Project-ID: 499051
