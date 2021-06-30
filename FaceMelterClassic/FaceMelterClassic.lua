@@ -75,7 +75,7 @@ function FaceMelter.events.PLAYER_LOGIN()
 end
 
 function FaceMelter.events.ADDON_LOADED(addon)
-    if addon ~= "FaceMelter" then
+    if addon ~= "FaceMelterClassic" then
         return
     end
     local _, playerClass = UnitClass("player");
@@ -184,6 +184,7 @@ function FaceMelter.events.ADDON_LOADED(addon)
     FaceMelter.eventFrame:RegisterEvent("UNIT_INVENTORY_CHANGED")
     FaceMelter.eventFrame:RegisterEvent("CHARACTER_POINTS_CHANGED")
 
+    print("FaceMelterClassic loaded.")
 end
 
 function FaceMelter.events.COMBAT_LOG_EVENT_UNFILTERED(timestamp, event, srcGUID, srcName, srcFlags, dstGUID, dstName,
@@ -842,7 +843,7 @@ end
 
 function FaceMelter:CreateOptionFrame()
     local panel = CreateFrame("FRAME", "FaceMelterOptions");
-    panel.name = "Face Melter";
+    panel.name = "Face Melter Classic";
     local fstring1 = panel:CreateFontString("FaceMelterOptions_string1", "OVERLAY", "GameFontNormal")
     local fstring2 = panel:CreateFontString("FaceMelterOptions_string2", "OVERLAY", "GameFontNormal")
     local fstring3 = panel:CreateFontString("FaceMelterOptions_string3", "OVERLAY", "GameFontNormal")
@@ -1014,6 +1015,6 @@ end
 
 -- Slash Command
 function FaceMelter.Options()
-    InterfaceOptionsFrame_OpenToFrame(getglobal("FaceMelterOptions"))
+    InterfaceOptionsFrame_OpenToCategory(getglobal("FaceMelterOptions"))
 end
 
