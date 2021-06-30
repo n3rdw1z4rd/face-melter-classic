@@ -781,6 +781,8 @@ function FaceMelter:GetPri(spell)
 end
 
 function FaceMelter:SetPri(spell, pri)
+    pri = math.floor(pri)
+
     local oldPri = facemelterdb.priRev[spell]
     local oldSpell = facemelterdb.pri[pri]
 
