@@ -1,4 +1,4 @@
-## Interface: 20500
+## Interface: 20501
 ## Title: Face Melter Classic
 ## Notes: Shadow priest max dps face melting machine.  Warning: Might SW:Death your own face off...
 ## Author: Falie, aka Drescan, Aytherine, sbd74 (updated for TBC Classic)
