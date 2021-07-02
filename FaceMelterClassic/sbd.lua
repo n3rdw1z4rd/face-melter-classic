@@ -12,24 +12,32 @@ function sbd:set_debug(v)
     debug = v
 end
 
+function sbd:_log(color, ...)
+    print(color, ...)
+end
+
 function sbd:log_debug(...)
     if debug then
-        print("|cff888888", ...)
+        self:_log("|cff888888", ...)
     end
 end
 
 function sbd:log_info(...)
-    print("|cff00ffff", ...)
+    self:_log("|cff00ffff", ...)
 end
 
 function sbd:log_error(...)
-    print("|cffff8888", ...)
+    self:_log("|cffff8888", ...)
 end
 
 function sbd:log_debug_table(tbl)
-    table.foreach(tbl, function(k, v)
-        sbd:log_debug(k .. ": ", v)
-    end)
+    if type(tbl) == 'table' then
+        table.foreach(tbl, function(k, v)
+            sbd:log_debug(k .. ": ", v)
+        end)
+    else
+        self:log_debug("(string)", tbl)
+    end
 end
 
 function sbd:count_table_pairs(tbl)

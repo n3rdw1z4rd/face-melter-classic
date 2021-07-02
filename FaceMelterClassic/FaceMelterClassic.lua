@@ -1,8 +1,14 @@
+local title = ...
+local version = GetAddOnMetadata(title, "Version")
+
 -- 
 -- Face Melter
 -- An addon by Falie, aka Drescan or Aytherine
+-- Updated for TBC Classic by sbd74/havoc74
 -- Let's squeeze some more DPS out of a broken spec... 
 --
+-- sbd:set_debug(true)
+
 -- Our base array
 FaceMelter = {}
 
@@ -23,9 +29,9 @@ FaceMelter.flayTime = 0
 FaceMelter.timeSinceLastUpdate = 0
 FaceMelter.blastCooldown = 8
 FaceMelter.painDuration = 18
-FaceMelter.shouldCheckStuff = true;
+FaceMelter.shouldCheckStuff = true
 
-FaceMelter.playerName = UnitName("player");
+FaceMelter.playerName = UnitName("player")
 FaceMelter.spellHaste = GetCombatRatingBonus(20)
 
 FaceMelter.textureList = {
@@ -61,7 +67,8 @@ FaceMelter.eventFrame:RegisterEvent("PLAYER_LOGIN")
 FaceMelter.events = {}
 
 function FaceMelter.events.PLAYER_LOGIN()
-    FaceMelter.playerName = UnitName("player");
+    sbd:log_debug('event: PLAYER_LOGIN')
+    FaceMelter.playerName = UnitName("player")
 
     FaceMelter.spellHaste = GetCombatRatingBonus(20)
 
@@ -75,10 +82,12 @@ function FaceMelter.events.PLAYER_LOGIN()
 end
 
 function FaceMelter.events.ADDON_LOADED(addon)
+    sbd:log_debug('event: ADDON_LOADED')
+
     if addon ~= "FaceMelterClassic" then
         return
     end
-    local _, playerClass = UnitClass("player");
+    local _, playerClass = UnitClass("player")
     if playerClass ~= "PRIEST" then
         return
     end
@@ -184,68 +193,83 @@ function FaceMelter.events.ADDON_LOADED(addon)
     FaceMelter.eventFrame:RegisterEvent("UNIT_INVENTORY_CHANGED")
     FaceMelter.eventFrame:RegisterEvent("CHARACTER_POINTS_CHANGED")
 
-    print("FaceMelterClassic loaded.")
+    sbd:log_info(title .. " " .. version .. " loaded - use /facemelter or /fm for options.")
 end
 
-function FaceMelter.events.COMBAT_LOG_EVENT_UNFILTERED(timestamp, event, srcGUID, srcName, srcFlags, dstGUID, dstName,
-    dstFlags, ...)
+function FaceMelter.events.COMBAT_LOG_EVENT_UNFILTERED(...)
+    sbd:log_debug('event: COMBAT_LOG_EVENT_UNFILTERED')
+
+    local _, event, _, _, srcName, _, _, dstGUID, dstName, _, _, _, spellName = CombatLogGetCurrentEventInfo()
+
     if srcName == FaceMelter.playerName then
         if event == "SPELL_CAST_START" then
-            local _, spellName = ...
             local guid = UnitGUID("target")
+
             if spellName == "Mind Blast" then
                 FaceMelter.currentSpell = "MB"
+
                 if (FaceMelter.textureList["highlight"]) then
                     FaceMelter.textureList["highlight"]:SetAlpha(0)
                 end
+
                 FaceMelter.npcList[guid] = UnitName("target")
                 FaceMelter:PushDisplay()
             elseif spellName == "Vampiric Touch" then
                 FaceMelter.currentSpell = "VT"
+
                 if (FaceMelter.textureList["highlight"]) then
                     FaceMelter.textureList["highlight"]:SetAlpha(0)
                 end
+
                 FaceMelter.npcList[guid] = UnitName("target")
                 FaceMelter.VTTarget = guid
                 FaceMelter:PushDisplay()
             end
         elseif event == "SPELL_CAST_SUCCESS" then
-            local _, spellName = ...
             if spellName == "Shadow Word: Pain" then
                 FaceMelter.currentSpell = "SWP"
+
                 if (FaceMelter.textureList["highlight"]) then
                     FaceMelter.textureList["highlight"]:SetAlpha(0)
                 end
+
                 FaceMelter.npcList[dstGUID] = dstName
                 FaceMelter.painList[dstGUID] = GetTime()
                 FaceMelter:PushDisplay()
             elseif spellName == "Shadow Word: Death" then
                 FaceMelter.currentSpell = "SWD"
+
                 if (FaceMelter.textureList["highlight"]) then
                     FaceMelter.textureList["highlight"]:SetAlpha(0)
                 end
+
                 FaceMelter.npcList[dstGUID] = dstName
                 FaceMelter.deathTime = GetTime()
                 FaceMelter:PushDisplay()
             elseif spellName == "Mind Flay" then
                 FaceMelter.currentSpell = "MF"
+
                 if (FaceMelter.textureList["highlight"]) then
                     FaceMelter.textureList["highlight"]:SetAlpha(0)
                 end
+
                 FaceMelter.npcList[dstGUID] = dstName
                 FaceMelter.flayTime = GetTime()
                 FaceMelter:PushDisplay()
             elseif spellName == "Vampiric Embrace" then
                 FaceMelter.currentSpell = "VE"
+
                 if (FaceMelter.textureList["highlight"]) then
                     FaceMelter.textureList["highlight"]:SetAlpha(0)
                 end
+
                 FaceMelter.npcList[dstGUID] = dstName
                 FaceMelter.embraceList[dstGUID] = GetTime()
                 FaceMelter:PushDisplay()
             end
         elseif event == "SPELL_MISSED" then -- aww we get reisted, we only care if it's a debuff though
             local _, spellName = ...
+
             if spellName == "Shadow Word: Pain" then
                 FaceMelter.painList[dstGUID] = 0
                 FaceMelter:PushDisplay()
@@ -258,16 +282,19 @@ function FaceMelter.events.COMBAT_LOG_EVENT_UNFILTERED(timestamp, event, srcGUID
             end
         end
     end
-
 end
 
 function FaceMelter.events.COMBAT_RATING_UPDATE(unit)
+    sbd:log_debug('event: COMBAT_RATING_UPDATE')
+
     if unit == "player" then
         FaceMelter.spellHaste = GetCombatRatingBonus(20) -- update spell haste
     end
 end
 
 function FaceMelter.events.PLAYER_TARGET_CHANGED(...)
+    sbd:log_debug('event: PLAYER_TARGET_CHANGED')
+
     -- target changed, set last target, update current target, will be nil if no target
     if (FaceMelter.shouldCheckStuff) then
         FaceMelter:CheckStuff()
@@ -276,7 +303,8 @@ function FaceMelter.events.PLAYER_TARGET_CHANGED(...)
 
     FaceMelter.lastTarget = FaceMelter.currentTarget
     FaceMelter.currentTarget = UnitGUID("target")
-    if UnitName("target") == nil or UnitIsFriend("player", "target") ~= nil or UnitHealth("target") == 0 then
+
+    if UnitName("target") == nil or UnitIsFriend("player", "target") == true or UnitHealth("target") == 0 then
         FaceMelter.displayFrame_last:Hide()
         FaceMelter.displayFrame_current:Hide()
         FaceMelter.displayFrame_next:Hide()
@@ -291,6 +319,8 @@ function FaceMelter.events.PLAYER_TARGET_CHANGED(...)
 end
 
 function FaceMelter.events.PLAYER_REGEN_ENABLED(...)
+    sbd:log_debug('event: PLAYER_REGEN_ENABLED')
+
     -- We have left combat, clean up GUIDs
     FaceMelter.npcList = {} -- {guid, name}
     FaceMelter.painList = {} -- {guid, GetTime}
@@ -298,20 +328,30 @@ function FaceMelter.events.PLAYER_REGEN_ENABLED(...)
     FaceMelter.embraceList = {} -- {guid, GetTime}
 end
 
-function FaceMelter.events.UNIT_SPELLCAST_INTERRUPTED(name, spellName, ...)
-    if name == "player" then
+function FaceMelter.events.UNIT_SPELLCAST_INTERRUPTED(unitTarget, castGUID, spellID)
+    sbd:log_debug('event: UNIT_SPELLCAST_INTERRUPTED')
+
+    local spellName = FaceMelter:GetSpellName(spellID)
+
+    if unitTarget == "player" then
         if spellName == "Mind Blast" then
             FaceMelter.blastTime = 0
         elseif spellName == "Vampiric Touch" and FaceMelter.touchList[UnitGUID("target")] ~= nil then
             FaceMelter.touchList[UnitGUID("target")] = 0
         end
+        
         FaceMelter.currentSpell = ""
     end
+
     FaceMelter:DecideSpells()
 end
 
-function FaceMelter.events.UNIT_SPELLCAST_SUCCEEDED(name, spellName, ...)
-    if name == "player" and spellName ~= "Mind Flay" then
+function FaceMelter.events.UNIT_SPELLCAST_SUCCEEDED(unitTarget, castGUID, spellID)
+    sbd:log_debug('event: UNIT_SPELLCAST_SUCCEEDED')
+
+    local spellName = FaceMelter:GetSpellName(spellID)
+
+    if unitTarget == "player" and spellName ~= "Mind Flay" then
         if spellName == "Mind Blast" then
             FaceMelter.blastTime = GetTime()
             if (FaceMelter.textureList["highlight"]) then
@@ -323,13 +363,17 @@ function FaceMelter.events.UNIT_SPELLCAST_SUCCEEDED(name, spellName, ...)
                 FaceMelter.textureList["highlight"]:SetAlpha(1)
             end
         end
+
         FaceMelter.currentSpell = ""
     end
-
 end
 
-function FaceMelter.events.UNIT_SPELLCAST_CHANNEL_STOP(name, spellName, ...)
-    if name == "player" and spellName == "Mind Flay" then
+function FaceMelter.events.UNIT_SPELLCAST_CHANNEL_STOP(unitTarget, castGUID, spellID)
+    sbd:log_debug('event: UNIT_SPELLCAST_CHANNEL_STOP')
+
+    local spellName = FaceMelter:GetSpellName(spellID)
+
+    if unitTarget == "player" and spellName == "Mind Flay" then
         if (FaceMelter.textureList["highlight"]) then
             FaceMelter.textureList["highlight"]:SetAlpha(1)
         end
@@ -338,18 +382,41 @@ function FaceMelter.events.UNIT_SPELLCAST_CHANNEL_STOP(name, spellName, ...)
 end
 
 function FaceMelter.events.UNIT_INVENTORY_CHANGED(name)
+    sbd:log_debug('event: UNIT_INVENTORY_CHANGED')
+
     if name == "player" then
         FaceMelter:CheckStuff()
     end
 end
 
 function FaceMelter.events.CHARACTER_POINTS_CHANGED()
+    sbd:log_debug('event: CHARACTER_POINTS_CHANGED')
+
     FaceMelter:CheckStuff()
+end
+
+function FaceMelter.events.ACTIONBAR_UPDATE_COOLDOWN(...)
+    sbd:log_debug('event: ACTIONBAR_UPDATE_COOLDOWN')
+
+    local start, dur = GetSpellCooldown("Shadow Word: Pain")
+    
+    if FaceMelter.currentSpell == "MF" and dur > 0 then
+        FaceMelter.gcdstart = start
+        FaceMelter.gcdduration = 3 - (3 * FaceMelter.spellHaste * .01)
+        FaceMelter.gcdbar:Show()
+    else
+        if dur > 0 then
+            FaceMelter.gcdstart = start
+            FaceMelter.gcdduration = dur
+            FaceMelter.gcdbar:Show()
+        end
+    end
 end
 
 -- End Event Handlers
 
 function FaceMelter:CreateGUI()
+    sbd:log_debug('function: CreateGUI')
 
     local displayFrame = CreateFrame("Frame", "FaceMelterDisplayFrame", UIParent, "BackdropTemplate")
     displayFrame:SetFrameStrata("BACKGROUND")
@@ -367,13 +434,21 @@ function FaceMelter:CreateGUI()
     displayFrame:SetMovable(true)
     -- displayFrame:RegisterForDrag("LeftButton")  --causes right buttont to go crazy, go figure
     displayFrame:SetClampedToScreen(true)
+
     displayFrame:SetScript("OnMouseDown", function(self)
+        sbd:log_debug('event: displayFrame: OnMouseDown')
+
         self:StartMoving()
     end)
+
     displayFrame:SetScript("OnMouseUp", function(self)
+        sbd:log_debug('event: displayFrame: OnMouseUp')
+
         self:StopMovingOrSizing()
     end)
+
     displayFrame:SetScript("OnDragStop", function(self)
+        sbd:log_debug('event: displayFrame: OnDragStop')
         self:StopMovingOrSizing()
     end)
 
@@ -428,6 +503,8 @@ function FaceMelter:CreateGUI()
     FaceMelter.textureList["highlight"] = t
 
     displayFrame:SetScript("OnUpdate", function(this, elapsed)
+        -- sbd:log_debug('event: displayFrame: OnUpdate')
+
         FaceMelter:OnUpdate(elapsed)
     end)
 
@@ -446,12 +523,19 @@ function FaceMelter:CreateGUI()
 
     local gcdbar = CreateFrame('Frame', 'FaceMelterGCDBar', UIParent)
     gcdbar:SetFrameStrata('HIGH')
+
     gcdbar:SetScript('OnShow', function()
+        sbd:log_debug('event: gcdbar: OnShow')
+
         FaceMelter.OnShowGCD()
     end)
+
     gcdbar:SetScript('OnHide', function()
+        sbd:log_debug('event: gcdbar: OnHide')
+
         FaceMelter.OnHideGCD()
     end)
+
     local gcdspark = gcdbar:CreateTexture(nil, 'DIALOG')
     FaceMelter.gcdstart = 0
     FaceMelter.gcdduration = 0
@@ -485,9 +569,14 @@ function FaceMelter:CreateGUI()
     SWDCheck:SetHeight(14)
 
     VECheck:SetScript("OnClick", function()
+        sbd:log_debug('event: VECheck: OnClick')
+
         FaceMelter:ToggleVE()
     end)
+
     SWDCheck:SetScript("OnClick", function()
+        sbd:log_debug('event: SWDCheck: OnClick')
+
         FaceMelter:ToggleDeath()
     end)
 
@@ -509,16 +598,26 @@ function FaceMelter:CreateGUI()
 end
 
 function FaceMelter.OnHideGCD()
+    sbd:log_debug('function: OnHideGCD')
+
     FaceMelter.gcdbar:SetScript('OnUpdate', nil)
 end
+
 function FaceMelter.OnShowGCD()
+    sbd:log_debug('function: OnShowGCD')
+
     FaceMelter.gcdbar:SetScript('OnUpdate', function()
+        -- sbd:log_debug('event: gcdbar: OnUpdate')
         FaceMelter.OnUpdateGCD()
     end)
 end
+
 function FaceMelter.OnUpdateGCD()
+    -- sbd:log_debug('function: OnUpdateGCD')
+
     FaceMelter.gcdspark:ClearAllPoints()
     local perc = (GetTime() - FaceMelter.gcdstart) / FaceMelter.gcdduration
+
     if perc > 1 then
         if FaceMelter.currentSpell == "SWD" or FaceMelter.currentSpell == "SWP" or FaceMelter.currentSpell == "VE" then
             if (FaceMelter.textureList["highlight"]) then
@@ -532,23 +631,10 @@ function FaceMelter.OnUpdateGCD()
 
 end
 
-function FaceMelter.events.ACTIONBAR_UPDATE_COOLDOWN(...)
-    local start, dur = GetSpellCooldown("Shadow Word: Pain")
-    if FaceMelter.currentSpell == "MF" and dur > 0 then
-        FaceMelter.gcdstart = start
-        FaceMelter.gcdduration = 3 - (3 * FaceMelter.spellHaste * .01)
-        FaceMelter.gcdbar:Show()
-    else
-        if dur > 0 then
-            FaceMelter.gcdstart = start
-            FaceMelter.gcdduration = dur
-            FaceMelter.gcdbar:Show()
-        end
-    end
-end
-
 function FaceMelter:OnUpdate(elapsed)
-    FaceMelter.timeSinceLastUpdate = FaceMelter.timeSinceLastUpdate + elapsed;
+    -- sbd:log_debug('function: OnUpdate')
+
+    FaceMelter.timeSinceLastUpdate = FaceMelter.timeSinceLastUpdate + elapsed
 
     if (FaceMelter.currentSpell == "MF" and FaceMelter.spellList["current"] ~= "MF" and GetTime() - FaceMelter.flayTime >
         (3 - (FaceMelter.spellHaste * .01 * 3)) * .67) then
@@ -564,6 +650,7 @@ function FaceMelter:OnUpdate(elapsed)
 end
 
 function FaceMelter:PushDisplay()
+    sbd:log_debug('function: PushDisplay')
 
     -- Move to the new spell to cast
     if FaceMelter.currentSpell == FaceMelter.spellList["current"] then
@@ -577,15 +664,19 @@ function FaceMelter:PushDisplay()
         FaceMelter.spellList["third"] = ""
     end
 
-    -- DEFAULT_CHAT_FRAME:AddMessage("Shif" .. FaceMelter.spellList["last"] .. FaceMelter.spellList["current"] .. FaceMelter.spellList["next"]);
+    -- DEFAULT_CHAT_FRAME:AddMessage("Shif" .. FaceMelter.spellList["last"] .. FaceMelter.spellList["current"] .. FaceMelter.spellList["next"])
     FaceMelter:DecideSpells()
 end
 
 function FaceMelter:DecideSpells()
-    FaceMelter.timeSinceLastUpdate = 0;
-    if UnitName("target") == nil or UnitIsFriend("player", "target") ~= nil or UnitHealth("target") == 0 then
+    -- sbd:log_debug('function: DecideSpells')
+
+    FaceMelter.timeSinceLastUpdate = 0
+
+    if UnitName("target") == nil or UnitIsFriend("player", "target") == true or UnitHealth("target") == 0 then
         return -- ignore the dead and friendly
     end
+
     local firstSpell = ""
     local secondSpell = ""
     local thirdSpell = ""
@@ -603,6 +694,7 @@ function FaceMelter:DecideSpells()
         FaceMelter.spellList["third"] = ""
         return
     end
+
     -- Check Priority spell 1 - SWP
     local painSecsElapsed = 9999
     local touchSecsElapsed = 9999
@@ -614,6 +706,7 @@ function FaceMelter:DecideSpells()
         else
             local timeUntilNext = 0
             -- set up our test subjects
+
             if spell == "SWP" and FaceMelter.painList[guid] ~= nil then
                 timeUntilNext = FaceMelter.painDuration - (currentTime - FaceMelter.painList[guid])
             elseif spell == "VT" and FaceMelter.touchList[guid] ~= nil then
@@ -677,14 +770,14 @@ function FaceMelter:DecideSpells()
     if FaceMelter.spellList["current"] == firstSpell then
         -- yay
     else
-        -- DEFAULT_CHAT_FRAME:AddMessage("Mismatch current: " .. FaceMelter.spellList["current"] .. firstSpell);
+        -- DEFAULT_CHAT_FRAME:AddMessage("Mismatch current: " .. FaceMelter.spellList["current"] .. firstSpell)
         FaceMelter.spellList["current"] = firstSpell
         FaceMelter.textureList["current"]:SetTexture(FaceMelter.textureList[FaceMelter.spellList["current"]])
     end
     if FaceMelter.spellList["next"] == secondSpell then
         -- yay
     else
-        -- DEFAULT_CHAT_FRAME:AddMessage("Mismatch next: " .. FaceMelter.spellList["next"] .. secondSpell);
+        -- DEFAULT_CHAT_FRAME:AddMessage("Mismatch next: " .. FaceMelter.spellList["next"] .. secondSpell)
         FaceMelter.spellList["next"] = secondSpell
         FaceMelter.textureList["next"]:SetTexture(FaceMelter.textureList[FaceMelter.spellList["next"]])
     end
@@ -706,12 +799,15 @@ function FaceMelter:DecideSpells()
 end
 
 function FaceMelter:CheckStuff()
+    sbd:log_debug('function: CheckStuff')
+
     local nameTalent, _, _, _, currentRank, _, _, _ = GetTalentInfo(3, 4)
     local painDuration = 18 + (currentRank * 3)
     local nameTalent, _, _, _, currentRank, _, _, _ = GetTalentInfo(3, 7)
     local blastCooldown = 8 - (currentRank * .5)
-
+    
     local absCount = 0
+
     local absolutionArray = {
         ["HeadSlot"] = "Hood of Absolution",
         ["ShoulderSlot"] = "Shoulderpads of Absolution",
@@ -725,6 +821,7 @@ function FaceMelter:CheckStuff()
 
     for item, name in pairs(absolutionArray) do
         local link = GetInventoryItemLink("player", GetInventorySlotInfo(item))
+
         if link then
             local foundName = GetItemInfo(link)
             if foundName ~= nil and strfind(foundName, name) then
@@ -739,14 +836,24 @@ function FaceMelter:CheckStuff()
 
     FaceMelter.blastCooldown = blastCooldown
     FaceMelter.painDuration = painDuration
+end
 
+function FaceMelter:GetSpellName(spellId)
+    local spellName = GetSpellInfo(spellId)
+    sbd:log_debug('GetSpellName:', spellId, ":", spellName)
+    return spellName
 end
 
 -- Options Panel
 function FaceMelter:GetVE()
+    sbd:log_debug('function: GetVE')
+
     return facemelterdb.useVE
 end
+
 function FaceMelter:ToggleVE()
+    sbd:log_debug('function: ToggleVE')
+
     if facemelterdb.useVE then
         facemelterdb.useVE = false
         FaceMelter.VECheck:SetChecked(false)
@@ -758,10 +865,15 @@ function FaceMelter:ToggleVE()
         FaceMelter.VECheck2:SetChecked(true)
     end
 end
+
 function FaceMelter:GetDeath()
+    sbd:log_debug('function: GetDeath')
     return facemelterdb.useDeath
 end
+
 function FaceMelter:ToggleDeath()
+    sbd:log_debug('function: ToggleDeath')
+
     if facemelterdb.useDeath then
         facemelterdb.useDeath = false
         FaceMelter.SWDCheck:SetChecked(false)
@@ -772,15 +884,22 @@ function FaceMelter:ToggleDeath()
         FaceMelter.SWDCheck2:SetChecked(true)
     end
 end
+
 function FaceMelter:GetLocked()
+    sbd:log_debug('function: GetLocked')
+
     return facemelterdb.locked
 end
 
 function FaceMelter:GetPri(spell)
+    sbd:log_debug('function: GetPri')
+
     return facemelterdb.priRev[spell]
 end
 
 function FaceMelter:SetPri(spell, pri)
+    sbd:log_debug('function: SetPri')
+
     pri = math.floor(pri)
 
     local oldPri = facemelterdb.priRev[spell]
@@ -796,17 +915,29 @@ function FaceMelter:SetPri(spell, pri)
 end
 
 function FaceMelter:ToggleLocked()
+    sbd:log_debug('function: ToggleLocked')
+
     if facemelterdb.locked then
         facemelterdb.locked = false
+
         FaceMelter.displayFrame:SetScript("OnMouseDown", function(self)
+            sbd:log_debug('displayFrame: event: OnMouseDown')
+
             self:StartMoving()
         end)
+
         FaceMelter.displayFrame:SetScript("OnMouseUp", function(self)
+            sbd:log_debug('displayFrame: event: OnMouseUp')
+
             self:StopMovingOrSizing()
         end)
+
         FaceMelter.displayFrame:SetScript("OnDragStop", function(self)
+            sbd:log_debug('displayFrame: event: OnDragStop')
+
             self:StopMovingOrSizing()
         end)
+
         FaceMelter.displayFrame:SetBackdropColor(0, 0, 0, .4)
         FaceMelter.displayFrame:EnableMouse(true)
     else
@@ -818,22 +949,36 @@ function FaceMelter:ToggleLocked()
         FaceMelter.displayFrame:EnableMouse(false)
     end
 end
+
 function FaceMelter:GetScale()
+    sbd:log_debug('function: GetScale')
+
     return facemelterdb.scale
 end
+
 function FaceMelter:SetScale(num)
+    sbd:log_debug('function: SetScale')
+
     facemelterdb.scale = num
     FaceMelter.displayFrame:SetScale(facemelterdb.scale)
     FaceMelter.cooldownFrame:SetScale(facemelterdb.scale)
 end
+
 function FaceMelter:GetHealthPercent()
+    sbd:log_debug('function: GetHealthPercent')
+
     return facemelterdb.healthPercent
 end
+
 function FaceMelter:SetHealthPercent(num)
+    sbd:log_debug('function: SetHealthPercent')
+
     facemelterdb.healthPercent = num
 end
 
 function FaceMelter:SetMiniAlpha(num)
+    sbd:log_debug('function: SetMiniAlpha')
+
     facemelterdb.miniOptionsAlpha = num
     FaceMelter.displayFrame_options:SetAlpha(num)
     if num == 0 then
@@ -844,8 +989,10 @@ function FaceMelter:SetMiniAlpha(num)
 end
 
 function FaceMelter:CreateOptionFrame()
-    local panel = CreateFrame("FRAME", "FaceMelterOptions");
-    panel.name = "Face Melter Classic";
+    sbd:log_debug('function: CreateOptionFrame')
+
+    local panel = CreateFrame("FRAME", "FaceMelterOptions")
+    panel.name = "Face Melter Classic"
     local fstring1 = panel:CreateFontString("FaceMelterOptions_string1", "OVERLAY", "GameFontNormal")
     local fstring2 = panel:CreateFontString("FaceMelterOptions_string2", "OVERLAY", "GameFontNormal")
     local fstring3 = panel:CreateFontString("FaceMelterOptions_string3", "OVERLAY", "GameFontNormal")
@@ -871,15 +1018,25 @@ function FaceMelter:CreateOptionFrame()
     checkbox2:SetHeight(18)
     checkbox3:SetWidth(18)
     checkbox3:SetHeight(18)
+
     checkbox1:SetScript("OnClick", function()
+        sbd:log_debug('checkbox1: event: Onclick')
+
         FaceMelter:ToggleLocked()
     end)
+
     checkbox2:SetScript("OnClick", function()
+        sbd:log_debug('checkbox2: event: Onclick')
+
         FaceMelter:ToggleVE()
     end)
+
     checkbox3:SetScript("OnClick", function()
+        sbd:log_debug('checkbox3: event: Onclick')
+
         FaceMelter:ToggleDeath()
     end)
+
     checkbox1:SetPoint("TOPRIGHT", -10, -10)
     checkbox2:SetPoint("TOPRIGHT", -10, -40)
     checkbox3:SetPoint("TOPRIGHT", -10, -70)
@@ -898,14 +1055,21 @@ function FaceMelter:CreateOptionFrame()
     slider2:SetValue(FaceMelter:GetScale())
     slider1:SetValueStep(1)
     slider2:SetValueStep(.05)
+
     slider1:SetScript("OnValueChanged", function(self)
-        FaceMelter:SetHealthPercent(self:GetValue());
+        sbd:log_debug('slider1: event: OnValueChanged')
+
+        FaceMelter:SetHealthPercent(self:GetValue())
         getglobal(self:GetName() .. "Text"):SetText(self:GetValue())
     end)
+
     slider2:SetScript("OnValueChanged", function(self)
-        FaceMelter:SetScale(self:GetValue());
+        sbd:log_debug('slider2: event: OnValueChanged')
+
+        FaceMelter:SetScale(self:GetValue())
         getglobal(self:GetName() .. "Text"):SetText(self:GetValue())
     end)
+
     getglobal(slider1:GetName() .. "Low"):SetText("1")
     getglobal(slider1:GetName() .. "High"):SetText("100")
     getglobal(slider1:GetName() .. "Text"):SetText(FaceMelter:GetHealthPercent())
@@ -974,24 +1138,39 @@ function FaceMelter:CreateOptionFrame()
     slider5:SetPoint("TOPRIGHT", -10, -250)
     slider6:SetPoint("TOPRIGHT", -10, -280)
     slider7:SetPoint("TOPRIGHT", -10, -310)
+
     slider3:SetScript("OnValueChanged", function(self)
-        FaceMelter:SetPri("SWP", self:GetValue());
+        sbd:log_debug('slider3: event: OnValueChanged')
+
+        FaceMelter:SetPri("SWP", self:GetValue())
         getglobal(self:GetName() .. "Text"):SetText(self:GetValue())
     end)
+
     slider4:SetScript("OnValueChanged", function(self)
-        FaceMelter:SetPri("VT", self:GetValue());
+        sbd:log_debug('slider4: event: OnValueChanged')
+
+        FaceMelter:SetPri("VT", self:GetValue())
         getglobal(self:GetName() .. "Text"):SetText(self:GetValue())
     end)
+
     slider5:SetScript("OnValueChanged", function(self)
-        FaceMelter:SetPri("MB", self:GetValue());
+        sbd:log_debug('slider5: event: OnValueChanged')
+
+        FaceMelter:SetPri("MB", self:GetValue())
         getglobal(self:GetName() .. "Text"):SetText(self:GetValue())
     end)
+
     slider6:SetScript("OnValueChanged", function(self)
-        FaceMelter:SetPri("SWD", self:GetValue());
+        sbd:log_debug('slider6: event: OnValueChanged')
+
+        FaceMelter:SetPri("SWD", self:GetValue())
         getglobal(self:GetName() .. "Text"):SetText(self:GetValue())
     end)
+
     slider7:SetScript("OnValueChanged", function(self)
-        FaceMelter:SetPri("VE", self:GetValue());
+        sbd:log_debug('slider7: event: OnValueChanged')
+
+        FaceMelter:SetPri("VE", self:GetValue())
         getglobal(self:GetName() .. "Text"):SetText(self:GetValue())
     end)
 
@@ -1004,7 +1183,9 @@ function FaceMelter:CreateOptionFrame()
     sliderMO:SetValue(facemelterdb.miniOptionsAlpha)
     sliderMO:SetValueStep(.05)
     sliderMO:SetScript("OnValueChanged", function(self)
-        FaceMelter:SetMiniAlpha(self:GetValue());
+        sbd:log_debug('sliderMO: event: OnValueChanged')
+
+        FaceMelter:SetMiniAlpha(self:GetValue())
         getglobal(self:GetName() .. "Text"):SetText(self:GetValue())
     end)
     getglobal(sliderMO:GetName() .. "Low"):SetText("0")
@@ -1012,11 +1193,12 @@ function FaceMelter:CreateOptionFrame()
     getglobal(sliderMO:GetName() .. "Text"):SetText(facemelterdb.miniOptionsAlpha)
     sliderMO:SetPoint("TOPRIGHT", -10, -340)
 
-    InterfaceOptions_AddCategory(panel);
+    InterfaceOptions_AddCategory(panel)
 end
 
 -- Slash Command
 function FaceMelter.Options()
+    sbd:log_debug('function: Options')
     InterfaceOptionsFrame_OpenToCategory(getglobal("FaceMelterOptions"))
 end
 
