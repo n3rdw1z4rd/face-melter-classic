@@ -8,4 +8,5 @@
 ## X-Curse-Project-ID: 499051
 ## X-WoWI-ID: 26098
 
+sbd.lua
 FaceMelterClassic.lua
