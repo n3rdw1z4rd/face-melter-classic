@@ -14,7 +14,7 @@ FaceMelter = {}
 
 -- Face Melter variables NOT SAVED
 
-FaceMelter.versionNumber = 1.2
+FaceMelter.versionNumber = version
 FaceMelter.currentTarget = ""
 FaceMelter.currentSpell = ""
 FaceMelter.lastTarget = ""
@@ -193,7 +193,7 @@ function FaceMelter.events.ADDON_LOADED(addon)
     FaceMelter.eventFrame:RegisterEvent("UNIT_INVENTORY_CHANGED")
     FaceMelter.eventFrame:RegisterEvent("CHARACTER_POINTS_CHANGED")
 
-    sbd:log_info(title .. " " .. version .. " loaded - use /facemelter or /fm for options.")
+    sbd:log_info(title .. " v" .. version .. " loaded - use /facemelter or /fm for options.")
 end
 
 function FaceMelter.events.COMBAT_LOG_EVENT_UNFILTERED(...)
