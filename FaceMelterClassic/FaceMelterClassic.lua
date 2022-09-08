@@ -34,13 +34,22 @@ FaceMelter.shouldCheckStuff = true
 FaceMelter.playerName = UnitName("player")
 FaceMelter.spellHaste = GetCombatRatingBonus(20)
 
+FaceMelter.localizedSpellNames = {
+    ["VT"] = GetSpellInfo(34914),   -- Vampiric Touch
+    ["SWP"] = GetSpellInfo(589),    -- Shadow Word: Pain
+    ["VE"] = GetSpellInfo(15286),   -- Vampiric Embrace
+    ["MB"] = GetSpellInfo(8092),    -- Mind Blast
+    ["SWD"] = GetSpellInfo(32379),  -- Shadow Word: Death
+    ["MF"] = GetSpellInfo(15407)    -- Mind Flay
+}
+
 FaceMelter.textureList = {
-    ["VT"] = GetSpellTexture("Vampiric Touch"),
-    ["SWP"] = GetSpellTexture("Shadow Word: Pain"),
-    ["VE"] = GetSpellTexture("Vampiric Embrace"),
-    ["MB"] = GetSpellTexture("Mind Blast"),
-    ["SWD"] = GetSpellTexture("Shadow Word: Death"),
-    ["MF"] = GetSpellTexture("Mind Flay"),
+    ["VT"] = GetSpellTexture(FaceMelter.localizedSpellNames["VT"]),
+    ["SWP"] = GetSpellTexture(FaceMelter.localizedSpellNames["SWP"]),
+    ["VE"] = GetSpellTexture(FaceMelter.localizedSpellNames["VE"]),
+    ["MB"] = GetSpellTexture(FaceMelter.localizedSpellNames["MB"]),
+    ["SWD"] = GetSpellTexture(FaceMelter.localizedSpellNames["SWD"]),
+    ["MF"] = GetSpellTexture(FaceMelter.localizedSpellNames["MF"]),
     ["last"] = nil,
     ["current"] = nil,
     ["next"] = nil,
@@ -72,12 +81,14 @@ function FaceMelter.events.PLAYER_LOGIN()
 
     FaceMelter.spellHaste = GetCombatRatingBonus(20)
 
-    FaceMelter.textureList["VT"] = GetSpellTexture("Vampiric Touch")
-    FaceMelter.textureList["SWP"] = GetSpellTexture("Shadow Word: Pain")
-    FaceMelter.textureList["VE"] = GetSpellTexture("Vampiric Embrace")
-    FaceMelter.textureList["MB"] = GetSpellTexture("Mind Blast")
-    FaceMelter.textureList["SWD"] = GetSpellTexture("Shadow Word: Death")
-    FaceMelter.textureList["MF"] = GetSpellTexture("Mind Flay")
+    sbd:log_debug_table(FaceMelter.localizedSpellNames)
+
+    FaceMelter.textureList["VT"] = GetSpellTexture(FaceMelter.localizedSpellNames["VT"])
+    FaceMelter.textureList["SWP"] = GetSpellTexture(FaceMelter.localizedSpellNames["SWP"])
+    FaceMelter.textureList["VE"] = GetSpellTexture(FaceMelter.localizedSpellNames["VE"])
+    FaceMelter.textureList["MB"] = GetSpellTexture(FaceMelter.localizedSpellNames["MB"])
+    FaceMelter.textureList["SWD"] = GetSpellTexture(FaceMelter.localizedSpellNames["SWD"])
+    FaceMelter.textureList["MF"] = GetSpellTexture(FaceMelter.localizedSpellNames["MF"])
 
 end
 
@@ -205,7 +216,7 @@ function FaceMelter.events.COMBAT_LOG_EVENT_UNFILTERED(...)
         if event == "SPELL_CAST_START" then
             local guid = UnitGUID("target")
 
-            if spellName == "Mind Blast" then
+            if spellName == FaceMelter.localizedSpellNames["MB"] then
                 FaceMelter.currentSpell = "MB"
 
                 if (FaceMelter.textureList["highlight"]) then
@@ -214,7 +225,7 @@ function FaceMelter.events.COMBAT_LOG_EVENT_UNFILTERED(...)
 
                 FaceMelter.npcList[guid] = UnitName("target")
                 FaceMelter:PushDisplay()
-            elseif spellName == "Vampiric Touch" then
+            elseif spellName == FaceMelter.localizedSpellNames["VT"] then
                 FaceMelter.currentSpell = "VT"
 
                 if (FaceMelter.textureList["highlight"]) then
@@ -226,7 +237,7 @@ function FaceMelter.events.COMBAT_LOG_EVENT_UNFILTERED(...)
                 FaceMelter:PushDisplay()
             end
         elseif event == "SPELL_CAST_SUCCESS" then
-            if spellName == "Shadow Word: Pain" then
+            if spellName == FaceMelter.localizedSpellNames["SWP"] then
                 FaceMelter.currentSpell = "SWP"
 
                 if (FaceMelter.textureList["highlight"]) then
@@ -236,7 +247,7 @@ function FaceMelter.events.COMBAT_LOG_EVENT_UNFILTERED(...)
                 FaceMelter.npcList[dstGUID] = dstName
                 FaceMelter.painList[dstGUID] = GetTime()
                 FaceMelter:PushDisplay()
-            elseif spellName == "Shadow Word: Death" then
+            elseif spellName == FaceMelter.localizedSpellNames["SWD"] then
                 FaceMelter.currentSpell = "SWD"
 
                 if (FaceMelter.textureList["highlight"]) then
@@ -246,7 +257,7 @@ function FaceMelter.events.COMBAT_LOG_EVENT_UNFILTERED(...)
                 FaceMelter.npcList[dstGUID] = dstName
                 FaceMelter.deathTime = GetTime()
                 FaceMelter:PushDisplay()
-            elseif spellName == "Mind Flay" then
+            elseif spellName == FaceMelter.localizedSpellNames["MF"] then
                 FaceMelter.currentSpell = "MF"
 
                 if (FaceMelter.textureList["highlight"]) then
@@ -256,7 +267,7 @@ function FaceMelter.events.COMBAT_LOG_EVENT_UNFILTERED(...)
                 FaceMelter.npcList[dstGUID] = dstName
                 FaceMelter.flayTime = GetTime()
                 FaceMelter:PushDisplay()
-            elseif spellName == "Vampiric Embrace" then
+            elseif spellName == FaceMelter.localizedSpellNames["VE"] then
                 FaceMelter.currentSpell = "VE"
 
                 if (FaceMelter.textureList["highlight"]) then
@@ -270,13 +281,13 @@ function FaceMelter.events.COMBAT_LOG_EVENT_UNFILTERED(...)
         elseif event == "SPELL_MISSED" then -- aww we get reisted, we only care if it's a debuff though
             local _, spellName = ...
 
-            if spellName == "Shadow Word: Pain" then
+            if spellName == FaceMelter.localizedSpellNames["SWP"] then
                 FaceMelter.painList[dstGUID] = 0
                 FaceMelter:PushDisplay()
-            elseif spellName == "Vampiric Touch" then
+            elseif spellName == FaceMelter.localizedSpellNames["VT"] then
                 FaceMelter.touchList[dstGUID] = 0
                 FaceMelter:PushDisplay()
-            elseif spellName == "Vampiric Embrace" then
+            elseif spellName == FaceMelter.localizedSpellNames["VE"] then
                 FaceMelter.embraceList[dstGUID] = 0
                 FaceMelter:PushDisplay()
             end
@@ -334,9 +345,9 @@ function FaceMelter.events.UNIT_SPELLCAST_INTERRUPTED(unitTarget, castGUID, spel
     local spellName = FaceMelter:GetSpellName(spellID)
 
     if unitTarget == "player" then
-        if spellName == "Mind Blast" then
+        if spellName == FaceMelter.localizedSpellNames["MB"] then
             FaceMelter.blastTime = 0
-        elseif spellName == "Vampiric Touch" and FaceMelter.touchList[UnitGUID("target")] ~= nil then
+        elseif spellName == FaceMelter.localizedSpellNames["VT"] and FaceMelter.touchList[UnitGUID("target")] ~= nil then
             FaceMelter.touchList[UnitGUID("target")] = 0
         end
         
@@ -351,13 +362,13 @@ function FaceMelter.events.UNIT_SPELLCAST_SUCCEEDED(unitTarget, castGUID, spellI
 
     local spellName = FaceMelter:GetSpellName(spellID)
 
-    if unitTarget == "player" and spellName ~= "Mind Flay" then
-        if spellName == "Mind Blast" then
+    if unitTarget == "player" and spellName ~= FaceMelter.localizedSpellNames["MF"] then
+        if spellName == FaceMelter.localizedSpellNames["MB"] then
             FaceMelter.blastTime = GetTime()
             if (FaceMelter.textureList["highlight"]) then
                 FaceMelter.textureList["highlight"]:SetAlpha(1)
             end
-        elseif spellName == "Vampiric Touch" then
+        elseif spellName == FaceMelter.localizedSpellNames["VT"] then
             FaceMelter.touchList[FaceMelter.VTTarget] = GetTime() -- set the time for current time
             if (FaceMelter.textureList["highlight"]) then
                 FaceMelter.textureList["highlight"]:SetAlpha(1)
@@ -373,7 +384,7 @@ function FaceMelter.events.UNIT_SPELLCAST_CHANNEL_STOP(unitTarget, castGUID, spe
 
     local spellName = FaceMelter:GetSpellName(spellID)
 
-    if unitTarget == "player" and spellName == "Mind Flay" then
+    if unitTarget == "player" and spellName == FaceMelter.localizedSpellNames["MF"] then
         if (FaceMelter.textureList["highlight"]) then
             FaceMelter.textureList["highlight"]:SetAlpha(1)
         end
@@ -398,7 +409,7 @@ end
 function FaceMelter.events.ACTIONBAR_UPDATE_COOLDOWN(...)
     sbd:log_debug('event: ACTIONBAR_UPDATE_COOLDOWN')
 
-    local start, dur = GetSpellCooldown("Shadow Word: Pain")
+    local start, dur = GetSpellCooldown(FaceMelter.localizedSpellNames["SWP"])
     
     if FaceMelter.currentSpell == "MF" and dur > 0 then
         FaceMelter.gcdstart = start
@@ -1087,8 +1098,8 @@ function FaceMelter:CreateOptionFrame()
     local fstring6a = panel:CreateFontString("FaceMelterOptions_string6a", "OVERLAY", "GameFontNormal")
     fstring6a:SetText("Priority List: 1 is first, 5 is last.")
     fstring6:SetText("SW: Pain")
-    fstring7:SetText("Vampiric Touch")
-    fstring8:SetText("Mind Blast")
+    fstring7:SetText(FaceMelter.localizedSpellNames["VT"])
+    fstring8:SetText(FaceMelter.localizedSpellNames["MB"])
     fstring9:SetText("SW: Death")
     fstring10:SetText("Vampric Embrace")
     fstring6a:SetPoint("TOPLEFT", 10, -160)
