@@ -1,6 +1,8 @@
 # face-melter-classic
 Original TBC FaceMelter addon, updated to work with TBC Classic
 
+The original authors are: Falie (aka Drescan) and Aytherine.
+
 ## Installation
 * Addon Manager:
   * [WoWUp](https://wowup.io/)
