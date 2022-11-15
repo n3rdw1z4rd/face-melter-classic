@@ -40,7 +40,8 @@ FaceMelter.localizedSpellNames = {
     ["VE"] = GetSpellInfo(15286),   -- Vampiric Embrace
     ["MB"] = GetSpellInfo(8092),    -- Mind Blast
     ["SWD"] = GetSpellInfo(32379),  -- Shadow Word: Death
-    ["MF"] = GetSpellInfo(15407)    -- Mind Flay
+    ["MF"] = GetSpellInfo(15407),   -- Mind Flay
+    ["DP"] = GetSpellInfo(2944)     -- Devouring Plague
 }
 
 FaceMelter.textureList = {
@@ -50,6 +51,7 @@ FaceMelter.textureList = {
     ["MB"] = GetSpellTexture(FaceMelter.localizedSpellNames["MB"]),
     ["SWD"] = GetSpellTexture(FaceMelter.localizedSpellNames["SWD"]),
     ["MF"] = GetSpellTexture(FaceMelter.localizedSpellNames["MF"]),
+    ["DP"] = GetSpellTexture(FaceMelter.localizedSpellNames["DP"]),
     ["last"] = nil,
     ["current"] = nil,
     ["next"] = nil,
@@ -89,6 +91,7 @@ function FaceMelter.events.PLAYER_LOGIN()
     FaceMelter.textureList["MB"] = GetSpellTexture(FaceMelter.localizedSpellNames["MB"])
     FaceMelter.textureList["SWD"] = GetSpellTexture(FaceMelter.localizedSpellNames["SWD"])
     FaceMelter.textureList["MF"] = GetSpellTexture(FaceMelter.localizedSpellNames["MF"])
+    FaceMelter.textureList["DP"] = GetSpellTexture(FaceMelter.localizedSpellNames["DP"])
 
 end
 
@@ -149,13 +152,17 @@ function FaceMelter.events.ADDON_LOADED(addon)
     if not facemelterdb.pri[5] then
         facemelterdb.pri[5] = "VE"
     end
+    if not facemelterdb.pri[6] then
+        facemelterdb.pri[6] = "DP"
+    end
     if not facemelterdb.priRev then
         facemelterdb.priRev = {
             ["SWP"] = 1,
             ["VT"] = 2,
             ["MB"] = 3,
             ["SWD"] = 4,
-            ["VE"] = 5
+            ["VE"] = 5,
+            ["DP"] = 6
         }
     end
 
@@ -739,6 +746,8 @@ function FaceMelter:DecideSpells()
                 else
                     timeUntilNext = 999 -- aka never
                 end
+            elseif spell == "DP" then
+                -- TODO: need to fill this in
             end
 
             -- run our tests
@@ -1212,4 +1221,3 @@ function FaceMelter.Options()
     sbd:log_debug('function: Options')
     InterfaceOptionsFrame_OpenToCategory(getglobal("FaceMelterOptions"))
 end
-
